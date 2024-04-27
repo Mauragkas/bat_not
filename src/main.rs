@@ -126,15 +126,6 @@ fn notify_user(bat: &mut BAT, charge_state: ChargeState) {
     }
 }
 
-// fn play_sound(sound: &str) {
-//     let command = format!("paplay {}", sound);
-//     std::process::Command::new("sh")
-//         .arg("-c")
-//         .arg(command)
-//         .output()
-//         .expect("failed to execute process");
-// }
-
 fn main() {
     let mut bat = BAT::new(State::DISCHARGING, 0);
 
@@ -142,7 +133,6 @@ fn main() {
     let mut is_low = 0;
     let mut is_crit = 0;
 
-    bat.charge = 11;
     loop {
         get_battery_status(&mut bat);
         // bat.state = State::DISCHARGING;
@@ -171,10 +161,13 @@ fn main() {
                 _ => {}
             }
         } 
-        if bat.state == State::CHARGING && is_charging == 0 {
+
+        if bat.state == State::CHARGING && (is_charging == 0 || is_low == 1 || is_crit == 1) {
             let charge_state = bat.get_battery_charge_state();
             notify_user(&mut bat, charge_state);
             is_charging = 1;
+            is_low = 0; // Reset flags
+            is_crit = 0;
         }
 
         sleep(Duration::from_millis(500));
